@@ -1,11 +1,19 @@
 from urllib.request import urlopen
-import feedparser
-import urllib
+
+import datetime
+import calendar
 import re
-import shutil
+
 
 from pip._vendor import requests
 
+def getTodayFolderName():
+    now = datetime.datetime.now()
+    return str(now.day) + "." + str(now.month) + "." + str(now.year)
+
+def getTodayString():
+    now = datetime.datetime.now()
+    return calendar.day_abbr[now.weekday()] + ", " + str(now.day) + "." + str(now.month) + "." + str(now.year)
 
 def getHTMLFile(url, filename):
     '''
@@ -65,12 +73,12 @@ def cleanhtml(raw_html):
     return cleantext
 
 
-def getXMLData(filename, tag, noOfItems = 10):
+def getXMLData(filename, tag, no_of_items = 10):
     '''
     Parse XML feed data.
     :param filename: XML path/to/file
-    :param tag: title, link, description, image
-    :param noOfItems: how many entries to be generated, default is 10
+    :param tag: title, link, description, image, date
+    :param no_of_items: how many entries to be generated, default is 10
     :return: list of strings of data
     '''
     head = 2
@@ -79,6 +87,9 @@ def getXMLData(filename, tag, noOfItems = 10):
     titles = []
 
     tag = tag.lower()
+
+    if tag == "date":
+        tag = "pubdate"
 
     if tag == "description":
         tag = "p"
@@ -96,10 +107,55 @@ def getXMLData(filename, tag, noOfItems = 10):
         for obj in searchobj:
             titles.append(cleanhtml(obj))
 
-    return titles[head:2 + noOfItems]
+    return titles[head:2 + no_of_items]
 
-def generateMyHTML(titles, links, description, images):
-    pass
+def getParsedData(url, no_of_items = 10):
+    url = getWorldURL(url)
+    downloadWorldXML(url, "/temp.xml")
+
+    titles = getXMLData("/temp.xml", "title", no_of_items)
+    links = getXMLData("/temp.xml", "link", no_of_items)
+    descriptions = getXMLData("/temp.xml", "description", no_of_items)
+    images = getXMLData("/temp.xml", "image", no_of_items)
+    pubdate = getXMLData("/temp.xml", "pubdate", no_of_items)
+
+    # TODO: Cleanup
+
+    return titles, links, descriptions, images, pubdate
+
+def generateSignature(archive_date, source_url):
+    string = "<h1>ABC World News Archive</h1>\n"
+    string += "<h2>" + archive_date + "</h2>\n"
+    string += "<img src=\"path/to/file\">\n"
+    string += "<b>Source: <\b>" + "<a href=" + source_url + ">" + source_url + "</a>\n"
+    string += "<b>Archivist:</b> YOUR NAME GOES HERE\n"
+
+
+def generateStory(numberInQueue, title, link, description, image, date):
+    string = "\n"
+    string += "<h1>" + numberInQueue + ". " + title + "</h1>\n"
+    string += "<img src=" + image + ">\n"
+    string += "<h4>" + description + "</h4>\n"
+    string += "<b>Link to full story:</b> " + "<a href=" + link + ">" + link + "</a>\n"
+    string += "<b>Publication date:</b> " + date + "\n"
+
+    return string
+
+
+def generateMyHTML(archive_date, filename, source_url=getWorldURL("http://www.abc.net.au/news/feeds/rss/")):
+    #TODO: Check if link is correct!
+    titles, links, descriptions, images, pubdate = getParsedData("http://www.abc.net.au/news/feeds/rss/")
+
+    string = "<!DOCTYPE html>\n<html>\n<head>\n"
+    string += generateSignature(archive_date, source_url)
+
+    for index in range(0, len(titles)):
+        string += generateStory(index + 1, titles[index], links[index], descriptions[index], images[index], pubdate[index])
+
+    string += "</head>\n</html>\n"
+
+    with open(filename, "w") as file:
+        file.write(string)
 
 #print(getWorldURL())
 # downloadWorldXML(getWorldURL(), "/Users/vanpana/Desktop/InternetArchive/world.xml")
@@ -110,6 +166,8 @@ print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "title", 4)
 print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "link", 4))
 print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "description", 4))
 print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "image", 4))
+print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "pubdate", 4))
+print(getTodayString())
 
 
 
