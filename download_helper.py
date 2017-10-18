@@ -3,6 +3,7 @@ from urllib.request import urlopen
 import datetime
 import calendar
 import re
+import os
 
 
 from pip._vendor import requests
@@ -47,6 +48,7 @@ def getWorldURL(url):
     searchObj = re.search(r'.*Top Stories.*<a\s+(?:[^>]*?\s+)?href=(["\'])(.*?)\1.*World.*', web_page_contents, re.M | re.I)
 
     #TODO: Check if not null
+    print("Generated World URL")
     return "http://www.abc.net.au" + searchObj.group(2)
 
 
@@ -82,7 +84,7 @@ def getXMLData(filename, tag, no_of_items = 10):
     :return: list of strings of data
     '''
     head = 2
-    filename = "file://" + filename
+    filename = "file://" + os.path.dirname(os.path.realpath(__file__)) + "/" + filename
     web_page_contents = urlopen(filename).read().decode('UTF-8')
     titles = []
 
@@ -111,13 +113,14 @@ def getXMLData(filename, tag, no_of_items = 10):
 
 def getParsedData(url, no_of_items = 10):
     url = getWorldURL(url)
-    downloadWorldXML(url, "/temp.xml")
+    temp_file_name = "temp.xml"
+    downloadWorldXML(url, temp_file_name)
 
-    titles = getXMLData("/temp.xml", "title", no_of_items)
-    links = getXMLData("/temp.xml", "link", no_of_items)
-    descriptions = getXMLData("/temp.xml", "description", no_of_items)
-    images = getXMLData("/temp.xml", "image", no_of_items)
-    pubdate = getXMLData("/temp.xml", "pubdate", no_of_items)
+    titles = getXMLData(temp_file_name, "title", no_of_items)
+    links = getXMLData(temp_file_name, "link", no_of_items)
+    descriptions = getXMLData(temp_file_name, "description", no_of_items)
+    images = getXMLData(temp_file_name, "image", no_of_items)
+    pubdate = getXMLData(temp_file_name, "pubdate", no_of_items)
 
     # TODO: Cleanup
 
@@ -130,10 +133,12 @@ def generateSignature(archive_date, source_url):
     string += "<b>Source: <\b>" + "<a href=" + source_url + ">" + source_url + "</a>\n"
     string += "<b>Archivist:</b> YOUR NAME GOES HERE\n"
 
+    return string
+
 
 def generateStory(numberInQueue, title, link, description, image, date):
     string = "\n"
-    string += "<h1>" + numberInQueue + ". " + title + "</h1>\n"
+    string += "<h1>" + str(numberInQueue) + ". " + title + "</h1>\n"
     string += "<img src=" + image + ">\n"
     string += "<h4>" + description + "</h4>\n"
     string += "<b>Link to full story:</b> " + "<a href=" + link + ">" + link + "</a>\n"
@@ -162,14 +167,14 @@ def generateMyHTML(archive_date, filename, source_url=getWorldURL("http://www.ab
 
 # print(getTitlesXML("/Users/vanpana/Desktop/InternetArchive/world.xml", 2))
 
-print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "title", 4))
-print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "link", 4))
-print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "description", 4))
-print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "image", 4))
-print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "pubdate", 4))
-print(getTodayString())
+# print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "title", 4))
+# print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "link", 4))
+# print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "description", 4))
+# print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "image", 4))
+# print(getXMLData("/Users/vanpana/Desktop/InternetArchive/world.xml", "pubdate", 4))
+# print(getTodayString())
 
-
+generateMyHTML(getTodayString(), "firstgenerated.html")
 
 #writeToFile("http://www.abc.net.au/news/feeds/rss/", "/Users/vanpana/Desktop/InternetArchive/abc.html")
 
