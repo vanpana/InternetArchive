@@ -126,38 +126,39 @@ def getParsedData(url, no_of_items = 10):
 
     return titles, links, descriptions, images, pubdate
 
+#-------------- HTML Generation --------------#
+
 def generateSignature(archive_date, source_url):
-    string = "<h1>ABC World News Archive</h1>\n"
-    string += "<h2>" + archive_date + "</h2>\n"
-    string += "<img src=\"path/to/file\">\n"
-    string += "<b>Source: <\b>" + "<a href=" + source_url + ">" + source_url + "</a>\n"
-    string += "<b>Archivist:</b> YOUR NAME GOES HERE\n"
+    string = "<center><h1><font color=\"#415274\">ABC World News Archive</font></h1>\n"
+    string += "<h2><font color=\"#415274\">" + archive_date + "</font></h2>\n"
+    string += "<img src=\"abclogo.png\">\n"
+    string += "<p><b>Source: </b>" + "<a href=" + source_url + ">" + source_url + "</a></p>\n"
+    string += "<p><b>Archivist:</b> YOUR NAME GOES HERE</p></center>\n<hr>\n"
 
     return string
 
 
 def generateStory(numberInQueue, title, link, description, image, date):
     string = "\n"
-    string += "<h1>" + str(numberInQueue) + ". " + title + "</h1>\n"
+    string += "<center><h1>" + str(numberInQueue) + ". " + title + "</h1>\n"
     string += "<img src=" + image + ">\n"
     string += "<h4>" + description + "</h4>\n"
-    string += "<b>Link to full story:</b> " + "<a href=" + link + ">" + link + "</a>\n"
-    string += "<b>Publication date:</b> " + date + "\n"
+    string += "<p><b>Link to full story:</b> " + "<a href=" + link + ">" + link + "</a></p>\n"
+    string += "<p><b>Publication date:</b> " + date + "</p></center>\n<hr>\n"
 
     return string
 
 
 def generateMyHTML(archive_date, filename, source_url=getWorldURL("http://www.abc.net.au/news/feeds/rss/")):
-    #TODO: Check if link is correct!
     titles, links, descriptions, images, pubdate = getParsedData("http://www.abc.net.au/news/feeds/rss/")
 
-    string = "<!DOCTYPE html>\n<html>\n<head>\n"
+    string = "<!DOCTYPE html>\n<html>\n<head>\n<body bgcolor=\"#E6E6FA\">\n"
     string += generateSignature(archive_date, source_url)
 
     for index in range(0, len(titles)):
         string += generateStory(index + 1, titles[index], links[index], descriptions[index], images[index], pubdate[index])
 
-    string += "</head>\n</html>\n"
+    string += "</body>\n</head>\n</html>\n"
 
     with open(filename, "w") as file:
         file.write(string)
