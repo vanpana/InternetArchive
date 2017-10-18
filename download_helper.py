@@ -269,7 +269,7 @@ lbox = Listbox(root)
 
 extract = Button(root, text="Extract news from archive", command=extractNews)
 display = Button(root, text="Display news from archive", command=displayNews)
-latest = Button(root, text="Fetch latest news", command=fetchLatestNews())
+latest = Button(root, text="Fetch latest news", command=fetchLatestNews)
 infotext = Label(text="Welcome to the archive!")
 
 lbox.pack()
