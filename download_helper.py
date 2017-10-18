@@ -142,6 +142,7 @@ def getParsedData(url, no_of_items = 10):
     return titles, links, descriptions, images, pubdate
 
 def writeParsedDataToFile(url, filename, no_of_items=10):
+    print("Started writing to file!")
     titles, links, descriptions, images, pubdate = getParsedData(url, no_of_items)
 
     with open(filename, "w") as file:
@@ -210,7 +211,7 @@ def generateMyHTML(archive_date, source_filename, dest_filename, source_url=getW
 
 # Func #
 def getSelection():
-    selection = getArchiveList()[lbox.curselection()[0]]
+    selection = lbox.get(lbox.curselection(), (lbox.curselection()))[0]
     if selection == "latest":
         selection = getTodayString()
     return selection
@@ -220,8 +221,12 @@ def extractNews():
         infotext.config(text="No item selected!")
     else:
         selection = getSelection()
-        generateMyHTML(selection, "archive/" + selection + ".txt", "archive/" + selection + ".html")
-        infotext.config(text="Archive for " + selection + " extracted!")
+
+        if not Path("archive/" + selection + ".txt").is_file():
+            infotext.config(text="Latest news not fetched!")
+        else:
+            generateMyHTML(selection, "archive/" + selection + ".txt", "archive/" + selection + ".html")
+            infotext.config(text="Archive for " + selection + " extracted!")
 
 def displayNews():
     if lbox.curselection() == ():
@@ -238,6 +243,7 @@ def displayNews():
 
 def fetchLatestNews():
     writeParsedDataToFile("http://www.abc.net.au/news/feeds/rss/", "archive/" + getTodayString() + ".txt")
+    infotext.config(text="Fetched latest news!")
 
 # UI #
 print(getArchiveList())
@@ -263,7 +269,7 @@ lbox = Listbox(root)
 
 extract = Button(root, text="Extract news from archive", command=extractNews)
 display = Button(root, text="Display news from archive", command=displayNews)
-latest = Button(root, text="Fetch latest news")
+latest = Button(root, text="Fetch latest news", command=fetchLatestNews())
 infotext = Label(text="Welcome to the archive!")
 
 lbox.pack()
