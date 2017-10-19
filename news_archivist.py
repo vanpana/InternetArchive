@@ -1,23 +1,109 @@
-import webbrowser
-from pathlib import Path
-from tkinter import *
+# -----Statement of Authorship----------------------------------------#
+#
+#  This is an individual assessment item.  By submitting this
+#  code I agree that it represents my own work.  I am aware of
+#  the University rule that a student must not act in a manner
+#  which constitutes academic dishonesty as stated and explained
+#  in QUT's Manual of Policies and Procedures, Section C/5.3
+#  "Academic Integrity" and Section E/2.1 "Student Code of Conduct".
+#
+#    Student no: PUT YOUR STUDENT NUMBER HERE
+#    Student name: PUT YOUR NAME HERE
+#
+#  NB: Files submitted without a completed copy of this statement
+#  will not be marked.  Submitted files will be subjected to
+#  software plagiarism analysis using the MoSS system
+#  (http://theory.stanford.edu/~aiken/moss/).
+#
+# --------------------------------------------------------------------#
+
+
+
+# -----Task Description-----------------------------------------------#
+#
+#  News Archivist
+#
+#  In this task you will combine your knowledge of HTMl/XML mark-up
+#  languages with your skills in Python scripting, pattern matching
+#  and Graphical User Interface development to produce a useful
+#  application for maintaining and displaying archived news or
+#  current affairs stories on a topic of your own choice.  See the
+#  instruction sheet accompanying this file for full details.
+#
+# --------------------------------------------------------------------#
+
+
+
+# -----Imported Functions---------------------------------------------#
+#
+# Below are various import statements that were used in our sample
+# solution.  You should be able to complete this assignment using
+# these functions only.
+
+# Import the function for opening a web document given its URL.
 from urllib.request import urlopen
 
-
-import datetime
-import calendar
+# Import the function for finding all occurrences of a pattern
+# defined via a regular expression, as well as the "multiline"
+# and "dotall" flags.
 import re
-import os
 
-from os.path import isfile, join
+# A function for opening an HTML document in your operating
+# system's default web browser. We have called the function
+# "webopen" so that it isn't confused with the "open" function
+# for writing/reading local text files.
+import webbrowser
+from urllib.request import urlopen
 from pip._vendor import requests
 
+# An operating system-specific function for getting the current
+# working directory/folder.  Use this function to create the
+# full path name to your HTML document.
+import os
+
+# An operating system-specific function for 'normalising' a
+# path to a file to the path-naming conventions used on this
+# computer.  Apply this function to the full name of your
+# HTML document so that your program will work on any
+# operating system.
+from os.path import normpath, isfile, join
+
+from pathlib import Path
+
+# Import the standard Tkinter GUI functions.
+from tkinter import *
+
+# Import the SQLite functions.
+from sqlite3 import *
+
+# Import the date and time function.
+import datetime
+import calendar
+#
+# --------------------------------------------------------------------#
+
+
+
+# -----Student's Solution---------------------------------------------#
+#
+# Put your solution at the end of this file.
+#
+
+# Name of the folder containing your archived web documents.  When
+# you submit your solution you must include the web archive along with
+# this Python program. The archive must contain one week's worth of
+# downloaded HTML/XML documents. It must NOT include any other files,
+# especially image files.
+internet_archive = 'archive'
+
+################ PUT YOUR SOLUTION HERE #################
 def getTodayString():
     '''
     Gets today's date as a string.
     :return: string (DD.MM.YYYY)
     '''
     now = datetime.datetime.now()
+    print("Returned today's string date")
     return calendar.day_abbr[now.weekday()] + "," + str(now.day) + "." + str(now.month) + "." + str(now.year)
 
 def getArchiveList():
@@ -33,6 +119,7 @@ def getArchiveList():
         if ".txt" in link:
             myarchive.append(link.strip(".txt"))
 
+    print("Returned archive list")
     return myarchive
 
 def getHTMLFile(url, filename):
@@ -52,6 +139,8 @@ def getHTMLFile(url, filename):
     html_file.write(web_page_contents)
     html_file.close()
 
+    print("Successfully written HTML File.")
+
 def getWorldURL(url):
     '''
     # Get the feed link of the World news section.
@@ -66,9 +155,12 @@ def getWorldURL(url):
 
     searchObj = re.search(r'.*Top Stories.*<a\s+(?:[^>]*?\s+)?href=(["\'])(.*?)\1.*World.*', web_page_contents, re.M | re.I)
 
-    #TODO: Check if not null
-    print("Generated World URL")
-    return "http://www.abc.net.au" + searchObj.group(2)
+    if searchObj is not None:
+        print("Generated World URL")
+        return "http://www.abc.net.au" + searchObj.group(2)
+    else:
+        print("Empty World URL, exiting.")
+        exit(-1)
 
 
 def downloadWorldXML(url, filename):
@@ -81,6 +173,7 @@ def downloadWorldXML(url, filename):
     response = requests.get(url)
     with open(filename, 'wb') as file:
         file.write(response.content)
+    print("Written XML File")
 
 
 def cleanhtml(raw_html):
@@ -128,6 +221,7 @@ def getXMLData(filename, tag, no_of_items = 10):
         for obj in searchobj:
             titles.append(cleanhtml(obj))
 
+    print("Returned " + tag)
     return titles[head:2 + no_of_items]
 
 def getParsedData(url, no_of_items = 10):
@@ -149,6 +243,7 @@ def getParsedData(url, no_of_items = 10):
 
     os.remove("temp.xml")
 
+    print("Parsed data from URL")
     return titles, links, descriptions, images, pubdate
 
 def writeParsedDataToFile(url, filename, no_of_items=10):
@@ -166,6 +261,7 @@ def writeParsedDataToFile(url, filename, no_of_items=10):
         for index in range(0, len(titles)):
             file.write(titles[index] + "\n" + links[index] + "\n" + descriptions[index] + "\n" + \
                        images[index] + "\n" + pubdate[index]+ "\n")
+    print("Stored parsed data to file!")
 
 def readParsedDataFromFile(filename):
     '''
@@ -174,6 +270,7 @@ def readParsedDataFromFile(filename):
     :return: list of ttles, links, descriptions, images, pubdate
     '''
     titles, links, descriptions, images, pubdate = [], [], [], [], []
+    print("Started reading data from file!")
     with open(filename, "r") as file:
         for line in file:
             titles.append(line.strip("\n"))
@@ -182,6 +279,7 @@ def readParsedDataFromFile(filename):
             images.append(file.readline().strip("\n"))
             pubdate.append(file.readline().strip("\n"))
 
+    print("Read parsed data from file!")
     return titles, links, descriptions, images, pubdate
 
 
@@ -246,6 +344,7 @@ def generateMyHTML(archive_date, source_filename, dest_filename, source_url=getW
 
     with open(dest_filename, "w") as file:
         file.write(string)
+    print("HTML Generated to file: " + dest_filename)
 
 #-------------- Tkinter --------------#
 
@@ -272,6 +371,7 @@ def extractNews():
         if not Path("archive/" + selection + ".txt").is_file():
             infotext.config(text="Latest news not fetched!")
         else:
+            infotext.config(text="Extracting archive...")
             generateMyHTML(selection, "archive/" + selection + ".txt", "archive/" + selection + ".html")
             infotext.config(text="Archive for " + selection + " extracted!")
 
@@ -290,11 +390,13 @@ def displayNews():
         else:
             filename = "file://" + os.path.dirname(os.path.realpath(__file__)) + "/archive/" + selection + ".html"
             webbrowser.open(filename)
+            infotext.config(text="Welcome to the archive!")
 
 def fetchLatestNews():
     '''
     Generates raw text for today's latest news
     '''
+    infotext.config(text="Fetching latest news...")
     writeParsedDataToFile("http://www.abc.net.au/news/feeds/rss/", "archive/" + getTodayString() + ".txt")
     infotext.config(text="Fetched latest news!")
 
