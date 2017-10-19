@@ -17,8 +17,6 @@
 #
 # --------------------------------------------------------------------#
 
-
-
 # -----Task Description-----------------------------------------------#
 #
 #  News Archivist
@@ -31,8 +29,6 @@
 #  instruction sheet accompanying this file for full details.
 #
 # --------------------------------------------------------------------#
-
-
 
 # -----Imported Functions---------------------------------------------#
 #
@@ -82,8 +78,6 @@ import calendar
 #
 # --------------------------------------------------------------------#
 
-
-
 # -----Student's Solution---------------------------------------------#
 #
 # Put your solution at the end of this file.
@@ -97,6 +91,8 @@ import calendar
 internet_archive = 'archive'
 
 ################ PUT YOUR SOLUTION HERE #################
+
+
 def getTodayString():
     '''
     Gets today's date as a string.
@@ -105,6 +101,7 @@ def getTodayString():
     now = datetime.datetime.now()
     print("Returned today's string date")
     return calendar.day_abbr[now.weekday()] + "," + str(now.day) + "." + str(now.month) + "." + str(now.year)
+
 
 def getArchiveList():
     '''
@@ -121,6 +118,7 @@ def getArchiveList():
 
     print("Returned archive list")
     return myarchive
+
 
 def getHTMLFile(url, filename):
     '''
@@ -140,6 +138,7 @@ def getHTMLFile(url, filename):
     html_file.close()
 
     print("Successfully written HTML File.")
+
 
 def getWorldURL(url):
     '''
@@ -224,6 +223,7 @@ def getXMLData(filename, tag, no_of_items = 10):
     print("Returned " + tag)
     return titles[head:2 + no_of_items]
 
+
 def getParsedData(url, no_of_items = 10):
     '''
     Get 5 lists of things needed to construct a web page
@@ -246,6 +246,7 @@ def getParsedData(url, no_of_items = 10):
     print("Parsed data from URL")
     return titles, links, descriptions, images, pubdate
 
+
 def writeParsedDataToFile(url, filename, no_of_items=10):
     '''
     Writes parsed data to file
@@ -262,6 +263,7 @@ def writeParsedDataToFile(url, filename, no_of_items=10):
             file.write(titles[index] + "\n" + links[index] + "\n" + descriptions[index] + "\n" + \
                        images[index] + "\n" + pubdate[index]+ "\n")
     print("Stored parsed data to file!")
+
 
 def readParsedDataFromFile(filename):
     '''
@@ -285,6 +287,7 @@ def readParsedDataFromFile(filename):
 
 
 #-------------- HTML Generation --------------#
+
 
 def generateSignature(archive_date, source_url):
     '''
@@ -359,6 +362,7 @@ def getSelection():
         selection = getTodayString()
     return selection
 
+
 def extractNews():
     '''
     Generate html from raw text. Shows error text in case no raw text exists or no item is selected.
@@ -374,6 +378,7 @@ def extractNews():
             infotext.config(text="Extracting archive...")
             generateMyHTML(selection, "archive/" + selection + ".txt", "archive/" + selection + ".html")
             infotext.config(text="Archive for " + selection + " extracted!")
+
 
 def displayNews():
     '''
@@ -391,6 +396,7 @@ def displayNews():
             filename = "file://" + os.path.dirname(os.path.realpath(__file__)) + "/archive/" + selection + ".html"
             webbrowser.open(filename)
             infotext.config(text="Welcome to the archive!")
+
 
 def fetchLatestNews():
     '''
