@@ -12,15 +12,19 @@ import os
 from os.path import isfile, join
 from pip._vendor import requests
 
-def getTodayFolderName():
-    now = datetime.datetime.now()
-    return str(now.day) + "." + str(now.month) + "." + str(now.year)
-
 def getTodayString():
+    '''
+    Gets today's date as a string.
+    :return: string (DD.MM.YYYY)
+    '''
     now = datetime.datetime.now()
     return calendar.day_abbr[now.weekday()] + "," + str(now.day) + "." + str(now.month) + "." + str(now.year)
 
 def getArchiveList():
+    '''
+    Gets the list of all existent archived pages.
+    :return: list of dates
+    '''
     mypath = "archive/"
     templist = [f for f in os.listdir(mypath) if isfile(join(mypath, f))]
 
@@ -127,6 +131,12 @@ def getXMLData(filename, tag, no_of_items = 10):
     return titles[head:2 + no_of_items]
 
 def getParsedData(url, no_of_items = 10):
+    '''
+    Get 5 lists of things needed to construct a web page
+    :param url: url of the website to parse
+    :param no_of_items: how many entries to be generated, default is 10
+    :return: list of ttles, links, descriptions, images, pubdate
+    '''
     url = getWorldURL(url)
     temp_file_name = "temp.xml"
     downloadWorldXML(url, temp_file_name)
@@ -142,6 +152,13 @@ def getParsedData(url, no_of_items = 10):
     return titles, links, descriptions, images, pubdate
 
 def writeParsedDataToFile(url, filename, no_of_items=10):
+    '''
+    Writes parsed data to file
+    :param url: url of the website to parse
+    :param filename: XML path/to/file to be written
+    :param no_of_items: how many entries to be generated, default is 10
+    :return: nothing, just writes a file on the disk
+    '''
     print("Started writing to file!")
     titles, links, descriptions, images, pubdate = getParsedData(url, no_of_items)
 
@@ -151,6 +168,11 @@ def writeParsedDataToFile(url, filename, no_of_items=10):
                        images[index] + "\n" + pubdate[index]+ "\n")
 
 def readParsedDataFromFile(filename):
+    '''
+    Gets the data from file and returns it
+    :param filename: XML path/to/file to read
+    :return: list of ttles, links, descriptions, images, pubdate
+    '''
     titles, links, descriptions, images, pubdate = [], [], [], [], []
     with open(filename, "r") as file:
         for line in file:
@@ -167,6 +189,12 @@ def readParsedDataFromFile(filename):
 #-------------- HTML Generation --------------#
 
 def generateSignature(archive_date, source_url):
+    '''
+    Generate own signature.
+    :param archive_date: date when html was archived
+    :param source_url: url where it was archived from
+    :return: signature string
+    '''
     string = "<center><h1><font color=\"#415274\">ABC World News Archive</font></h1>\n"
     string += "<h2><font color=\"#415274\">" + archive_date + "</font></h2>\n"
     string += "<img src=\"../abclogo.gif\">\n"
@@ -177,6 +205,16 @@ def generateSignature(archive_date, source_url):
 
 
 def generateStory(numberInQueue, title, link, description, image, date):
+    '''
+    Generate stories for html
+    :param numberInQueue: number from total number of stories
+    :param title: string
+    :param link: string
+    :param description: string
+    :param image: string
+    :param date: string
+    :return: story string
+    '''
     string = "\n"
     string += "<center><h1>" + str(numberInQueue) + ". " + title + "</h1>\n"
     string += "<img src=" + image + ">\n"
@@ -188,6 +226,14 @@ def generateStory(numberInQueue, title, link, description, image, date):
 
 
 def generateMyHTML(archive_date, source_filename, dest_filename, source_url=getWorldURL("http://www.abc.net.au/news/feeds/rss/")):
+    '''
+    HTML generator
+    :param archive_date: date when it was archived
+    :param source_filename: raw text file
+    :param dest_filename: where html will be saved
+    :param source_url: data source, defaul is abc.net.au rss feed
+    :return:
+    '''
     titles, links, descriptions, images, pubdate = readParsedDataFromFile(source_filename)
 
     string = "<!DOCTYPE html>\n<html>\n<head>\n<body bgcolor=\"#E6E6FA\">\n"
@@ -201,22 +247,23 @@ def generateMyHTML(archive_date, source_filename, dest_filename, source_url=getW
     with open(dest_filename, "w") as file:
         file.write(string)
 
-
-
-# writeParsedDataToFile("http://www.abc.net.au/news/feeds/rss/", "archive/Wed, 18.10.2017.txt")
-# print(readParsedDataFromFile("archive/Wed, 18.10.2017.txt"))
-# generateMyHTML(getTodayString(), "archive/Wed, 18.10.2017.txt", "archive/firstgenerated.html")
-
 #-------------- Tkinter --------------#
 
 # Func #
 def getSelection():
+    '''
+    Get listbox selected text
+    :return: selected date
+    '''
     selection = lbox.get(lbox.curselection(), (lbox.curselection()))[0]
     if selection == "latest":
         selection = getTodayString()
     return selection
 
 def extractNews():
+    '''
+    Generate html from raw text. Shows error text in case no raw text exists or no item is selected.
+    '''
     if lbox.curselection() == ():
         infotext.config(text="No item selected!")
     else:
@@ -229,6 +276,9 @@ def extractNews():
             infotext.config(text="Archive for " + selection + " extracted!")
 
 def displayNews():
+    '''
+    Displays html in browser. Shows error text in case no html is generated or no item is selected.
+    '''
     if lbox.curselection() == ():
         infotext.config(text="No item selected!")
     else:
@@ -242,6 +292,9 @@ def displayNews():
             webbrowser.open(filename)
 
 def fetchLatestNews():
+    '''
+    Generates raw text for today's latest news
+    '''
     writeParsedDataToFile("http://www.abc.net.au/news/feeds/rss/", "archive/" + getTodayString() + ".txt")
     infotext.config(text="Fetched latest news!")
 
@@ -251,18 +304,6 @@ root = Tk()
 root.title("ABC News Archive")
 
 logoimg = PhotoImage(file="abclogo.gif")
-# w1 = Label(root, image=logo).pack(side="top")
-# w2 = Label(root,
-#            justify=LEFT,
-#            padx = 10,
-#            text="da\ndadadada\nfdsafas").pack(side="bottom left")
-# w3 = Label(root,
-#            justify=LEFT,
-#            padx = 10,
-#            text="fdsaga\ndfvnfgnfa\nfytryrtfas").pack(side="bottom right")
-
-
-
 logo = Label(root, image=logoimg).pack(side="top")
 
 lbox = Listbox(root)
@@ -284,26 +325,3 @@ for item in getArchiveList():
 lbox.insert(END,"latest")
 
 root.mainloop()
-
-
-
-
-
-#writeToFile("http://www.abc.net.au/news/feeds/rss/", "/Users/vanpana/Desktop/InternetArchive/abc.html")
-
-### Some regex for abc net feed
-# Getting the world feed link
-
-
-####
-# Some regex for techcrunch
-# Getting the titles
-# cat test.html | grep " data-permalink=\".*\"" | sed 's/.*"\(.*\)"[^"]*$/\1/'
-
-# Getting the pics
-# cat test.html | grep " data-omni-sm=\".*\"" | grep " data-src=" | sed 's/.*data-src=\"\(.*\)\".*/\1/g'
-
-# Getting desc (maybe)
-# cat test.html | grep "excerpt" | sed "s/.*excerpt\">\(.*\).*$/\1/g" | sed "s/.*content=\"\(.*\)\".*/\1/g" | grep -v "<"
-
-
