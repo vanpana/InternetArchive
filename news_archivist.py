@@ -70,7 +70,7 @@ from pathlib import Path
 from tkinter import *
 
 # Import the SQLite functions.
-from sqlite3 import *
+import sqlite3
 
 # Import the date and time function.
 import datetime
@@ -349,7 +349,27 @@ def generateMyHTML(archive_date, source_filename, dest_filename, source_url=getW
         file.write(string)
     print("HTML Generated to file: " + dest_filename)
 
+
 #-------------- Tkinter --------------#
+# DB init #
+
+conn = sqlite3.connect('event_log.db')
+c = conn.cursor()
+c.execute("SELECT * from Event_Log")
+print(c.fetchall())
+
+# Create table
+# Must be disabled for the assignment
+# c.execute("CREATE TABLE Event_Log (Event_Number int, Description text)")
+
+def logToDB(message):
+    c.execute("SELECT * FROM Event_Log WHERE Event_Number = (SELECT MAX(Event_Number)  FROM Event_Log)")
+    print("WTF: ", end="")
+    print(c.fetchone()[0])
+    db_index = c.fetchone()[0]
+    if db_index == None:
+        db_index = 0
+    c.execute("INSERT INTO Event_Log VALUES (?,?)", (db_index + 1, message))
 
 # Func #
 def getSelection():
@@ -369,15 +389,18 @@ def extractNews():
     '''
     if lbox.curselection() == ():
         infotext.config(text="No item selected!")
+        logToDB("Tried extracting without selecting an item")
     else:
         selection = getSelection()
 
         if not Path("archive/" + selection + ".txt").is_file():
             infotext.config(text="Latest news not fetched!")
+            logToDB("Tried extracting without fetching last news")
         else:
             infotext.config(text="Extracting archive...")
             generateMyHTML(selection, "archive/" + selection + ".txt", "archive/" + selection + ".html")
             infotext.config(text="Archive for " + selection + " extracted!")
+            logToDB("Extracted archive for " + selection)
 
 
 def displayNews():
@@ -386,16 +409,19 @@ def displayNews():
     '''
     if lbox.curselection() == ():
         infotext.config(text="No item selected!")
+        logToDB("Tried displaying without selecting an item")
     else:
         selection = getSelection()
         filename = os.path.dirname(os.path.realpath(__file__)) + "/archive/" + selection + ".html"
 
         if not Path(filename).is_file():
             infotext.config(text="Archive for " + selection + " not extracted yet!")
+            logToDB("Tried displaying an inexistent HTML file")
         else:
             filename = "file://" + os.path.dirname(os.path.realpath(__file__)) + "/archive/" + selection + ".html"
             webbrowser.open(filename)
             infotext.config(text="Welcome to the archive!")
+            logToDB("Displayed archive for " + selection)
 
 
 def fetchLatestNews():
@@ -405,6 +431,7 @@ def fetchLatestNews():
     infotext.config(text="Fetching latest news...")
     writeParsedDataToFile("http://www.abc.net.au/news/feeds/rss/", "archive/" + getTodayString() + ".txt")
     infotext.config(text="Fetched latest news!")
+    logToDB("Fetched latest news")
 
 # UI #
 print(getArchiveList())
@@ -421,15 +448,39 @@ display = Button(root, text="Display news from archive", command=displayNews)
 latest = Button(root, text="Fetch latest news", command=fetchLatestNews)
 infotext = Label(text="Welcome to the archive!")
 
+
+logger_check_var = IntVar()
+
+def logger_check_log():
+    if logger_check_var.get() != 0:
+        print("Event logging switched on")
+        logToDB("Event logging switched on")
+    else:
+        print("Event logging switched off")
+        logToDB("Event logging switched off")
+
+
+logger_check = Checkbutton(root, text="Log", variable=logger_check_var, command=logger_check_log)
+logger_check.deselect()
+
+
 lbox.pack()
 extract.pack()
 display.pack()
 latest.pack()
 infotext.pack()
+logger_check.pack()
 
 for item in getArchiveList():
     if item != getTodayString():
         lbox.insert(END, item)
-lbox.insert(END,"latest")
+lbox.insert(END, "latest")
 
 root.mainloop()
+
+# Save (commit) the changes
+conn.commit()
+
+# We can also close the connection if we are done with it.
+# Just be sure any changes have been committed or they will be lost.
+conn.close()
