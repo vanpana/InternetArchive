@@ -364,10 +364,10 @@ print(c.fetchall())
 
 def logToDB(message):
     c.execute("SELECT * FROM Event_Log WHERE Event_Number = (SELECT MAX(Event_Number)  FROM Event_Log)")
-    print("WTF: ", end="")
-    print(c.fetchone()[0])
-    db_index = c.fetchone()[0]
-    if db_index == None:
+    full = c.fetchone()
+    zero = full[0]
+    db_index = zero
+    if db_index is None:
         db_index = 0
     c.execute("INSERT INTO Event_Log VALUES (?,?)", (db_index + 1, message))
 
