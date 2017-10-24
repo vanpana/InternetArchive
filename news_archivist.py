@@ -431,6 +431,11 @@ def fetchLatestNews():
     infotext.config(text="Fetched latest news!")
     logToDB("Fetched latest news")
 
+    if Path("archive/" + getTodayString() + ".html").is_file():
+        os.remove("archive/" + getTodayString() + ".html")
+        print("Cleared previous HTML for latest news")
+        logToDB("Cleared previous HTML for latest news")
+
 # UI #
 # print(getArchiveList())
 
