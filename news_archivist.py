@@ -284,8 +284,6 @@ def readParsedDataFromFile(filename):
     print("Read parsed data from file!")
     return titles, links, descriptions, images, pubdate
 
-
-
 #-------------- HTML Generation --------------#
 
 
@@ -434,7 +432,9 @@ def fetchLatestNews():
     logToDB("Fetched latest news")
 
 # UI #
-print(getArchiveList())
+# print(getArchiveList())
+
+
 root = Tk()
 root.title("ABC News Archive")
 
